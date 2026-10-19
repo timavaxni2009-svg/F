@@ -41,6 +41,7 @@ window.updateItemField = function(itemId, field, value) {
     if (item) {
         item[field] = value;
         saveData();
+        syncItemToApplication(item); // Синхронизируем при изменении прямо в таблице
     }
 };
 
@@ -50,6 +51,7 @@ window.updateItemQuantity = function(itemId, value) {
         item.quantity = parseInt(value) || 1;
         saveData();
         renderCartridgesTab();
+        syncItemToApplication(item); // Синхронизируем количество
     }
 };
 
@@ -70,6 +72,8 @@ window.openEditModal = function(id) {
     document.getElementById('modalTitle').innerText = 'Редактировать картридж';
     document.getElementById('editId').value = item.id;
     document.getElementById('editItemName').value = item.itemName || '';
+    document.getElementById('editLocation').value = item.location || '';
+    document.getElementById('editDateTaken').value = item.dateTaken || '';
     document.getElementById('editQuantity').value = item.quantity || 1;
     modal.style.display = 'block';
 };
@@ -79,31 +83,30 @@ if (editForm) {
         e.preventDefault();
         const id = document.getElementById('editId').value;
         
-        const qtyInput = parseInt(document.getElementById('editQuantity').value) || 1;
-        
         const itemData = {
             itemName: document.getElementById('editItemName').value,
-            quantity: qtyInput,
+            location: document.getElementById('editLocation').value,
+            dateTaken: document.getElementById('editDateTaken').value,
+            quantity: parseInt(document.getElementById('editQuantity').value) || 1,
             isCartridge: true
         };
 
+        let savedItem;
         if (id) {
             const index = inventory.findIndex(i => String(i.id) === String(id));
-            if (index !== -1) inventory[index] = { ...inventory[index], ...itemData };
+            if (index !== -1) {
+                inventory[index] = { ...inventory[index], ...itemData };
+                savedItem = inventory[index];
+            }
         } else {
             itemData.id = Date.now();
             inventory.push(itemData);
-            
-            // АВТОМАТИЧЕСКИ ОТПРАВЛЯЕМ В ЗАЯВКУ С УКАЗАННЫМ КОЛИЧЕСТВОМ
-            addApplicationRow({ 
-                name: itemData.itemName, 
-                note: 'Заправка', 
-                itemId: itemData.id,
-                qty: qtyInput // Передаем количество
-            });
+            savedItem = itemData;
         }
 
         saveData();
+        if (savedItem) syncItemToApplication(savedItem); // Авто-добавление в заявку
+        
         if (document.getElementById('tab-cartridges').classList.contains('active')) {
             renderCartridgesTab();
         }
@@ -116,6 +119,14 @@ window.deleteItem = function(id) {
         inventory = inventory.filter(item => String(item.id) !== String(id));
         saveData();
         renderCartridgesTab();
+        
+        // Удаляем строку из заявки
+        const appRow = document.querySelector(`#app-table-body tr[data-item-id="${id}"]`);
+        if (appRow) {
+            appRow.remove();
+            document.querySelectorAll('.app-data-row').forEach((row, index) => row.querySelector('.row-num').textContent = index + 1);
+            updateAppTotal();
+        }
     }
 };
 
@@ -149,7 +160,7 @@ function renderCartridgesTab() {
         const isStock = loc.includes('склад') || loc === '';
         if (statusFilter === 'stock' && !isStock) return false;
         if (statusFilter === 'issued' && isStock) return false;
-        const searchStr = `${item.itemName} ${item.invNumber} ${item.serialNumber}`.toLowerCase();
+        const searchStr = `${item.itemName} ${item.location} ${item.dateTaken}`.toLowerCase();
         if (searchText && !searchStr.includes(searchText)) return false;
         return true;
     });
@@ -162,7 +173,7 @@ function renderCartridgesTab() {
             <td>${index + 1}</td>
             <td><input type="text" class="unit-input" value="${item.itemName || ''}" onchange="updateItemField('${item.id}', 'itemName', this.value)"></td>
             <td><input type="number" class="unit-input" min="1" value="${getItemQuantity(item)}" onchange="updateItemQuantity('${item.id}', this.value)"></td>
-            <td><input type="text" class="unit-input" value="${loc}" placeholder="Склад или Кабинет..." onchange="updateItemField('${item.id}', 'location', this.value); renderCartridgesTab();"></td>
+            <td><input type="text" class="unit-input" value="${loc}" placeholder="Отделение..." onchange="updateItemField('${item.id}', 'location', this.value); renderCartridgesTab();"></td>
             <td><input type="date" class="unit-input" value="${item.dateTaken || ''}" onchange="updateItemField('${item.id}', 'dateTaken', this.value); renderCartridgesTab();"></td>
             <td>
                 <button class="btn btn-primary" onclick="sendToApplication('${item.id}')" title="Добавить в заявку" style="padding: 4px 8px; font-size: 14px;">📝</button>
@@ -174,7 +185,7 @@ function renderCartridgesTab() {
     });
 
     const info = document.getElementById('cartridgeInfo');
-    if (info) info.textContent = `Всего картриджей: ${totalUnits} шт.`;
+    if (info) info.textContent = `Всего картриджей: ${totalUnits} шт. (На складе: ${countStock} | Выдано: ${countIssued})`;
 }
 
 const btnAddCartridge = document.getElementById('btnAddCartridge');
@@ -184,6 +195,8 @@ if (btnAddCartridge) {
         document.getElementById('editForm').reset();
         document.getElementById('editId').value = '';
         document.getElementById('editItemName').value = 'Картридж ';
+        document.getElementById('editLocation').value = '';
+        document.getElementById('editDateTaken').value = '';
         document.getElementById('editQuantity').value = '1';
         modal.style.display = 'block';
     });
@@ -201,7 +214,7 @@ if (btnExportCart) {
         const tbody = document.getElementById('cartridgesTableBody');
         if (!tbody || tbody.querySelectorAll('tr').length === 0) return alert('Нет данных для экспорта.');
         
-        const rows = [['№', 'Наименование', 'Количество', 'Где (Куда)', 'Когда взяли']];
+        const rows = [['№', 'Наименование', 'Количество', 'Отделение (Куда)', 'Когда взяли']];
         tbody.querySelectorAll('tr').forEach(tr => {
             const tds = tr.querySelectorAll('td');
             rows.push([
@@ -244,6 +257,8 @@ if (document.getElementById('importJson')) {
                     inventory = data.inventory;
                     saveData();
                     renderCartridgesTab();
+                    document.querySelectorAll('.app-data-row').forEach(row => row.remove());
+                    inventory.filter(isCartridgeItem).forEach(item => syncItemToApplication(item));
                     alert('Данные загружены!');
                 }
             } catch (err) { alert('Ошибка: ' + err.message); }
@@ -253,8 +268,32 @@ if (document.getElementById('importJson')) {
 }
 
 // ==========================================
-// 7. ЗАЯВКА НА РЕМОНТ
+// 7. ЗАЯВКА НА РЕМОНТ И СИНХРОНИЗАЦИЯ
 // ==========================================
+function syncItemToApplication(item) {
+    const row = document.querySelector(`#app-table-body tr[data-item-id="${item.id}"]`);
+    let noteText = 'Заправка';
+    if (item.location) noteText += ` (Отделение: ${item.location})`;
+
+    if (row) {
+        // Если строка уже есть, обновляем данные
+        row.querySelector('.app-tech-name').value = item.itemName;
+        row.querySelector('.app-qty').value = getItemQuantity(item);
+        row.querySelector('.app-note').value = noteText;
+        row.querySelector('.app-date').value = item.dateTaken || '';
+        updateAppTotal();
+    } else {
+        // Если строки нет, создаем новую
+        addApplicationRow({ 
+            name: item.itemName, 
+            note: noteText, 
+            itemId: item.id,
+            qty: getItemQuantity(item),
+            date: item.dateTaken 
+        });
+    }
+}
+
 window.addApplicationRow = function(data = null) {
     const tbody = document.getElementById('app-table-body');
     const totalRow = document.getElementById('app-total-row');
@@ -270,14 +309,15 @@ window.addApplicationRow = function(data = null) {
 
     const techName = data && data.name ? data.name : '';
     const note = data && data.note ? data.note : '';
-    const qty = data && data.qty ? data.qty : 1; // Берем переданное количество
+    const qty = data && data.qty ? data.qty : 1;
+    const dateVal = data && data.date ? data.date : '';
 
     tr.innerHTML = `
         <td class="row-num">${rowCount}</td>
         <td>Заправка/ремонт</td>
         <td><input type="text" class="app-tech-name" value="${techName}" placeholder="Введите технику" style="text-align: center;"></td>
         <td><input type="number" class="app-qty" min="1" value="${qty}" onchange="updateAppTotal()" oninput="updateAppTotal()"></td>
-        <td><input type="text" class="app-date" placeholder="Дата и время"></td>
+        <td><input type="date" class="app-date" value="${dateVal}" placeholder="Дата"></td>
         <td><input type="text" class="app-note" value="${note}" placeholder="Примечание"></td>
         <td class="no-print" style="border: none; padding-left: 10px;"><button class="btn btn-danger" onclick="deleteAppRow(this)" style="padding: 2px 6px; font-size: 12px;">❌</button></td>
     `;
@@ -294,7 +334,7 @@ window.deleteAppRow = function(btn) {
 window.clearApplicationRows = function() {
     if (confirm('Очистить заявку?')) {
         document.querySelectorAll('.app-data-row').forEach(row => row.remove());
-        addApplicationRow();
+        updateAppTotal();
     }
 };
 
@@ -305,12 +345,7 @@ window.sendToApplication = function(itemId) {
     const appTabBtn = document.querySelector('[data-tab="tab-application"]');
     if (appTabBtn) appTabBtn.click();
 
-    addApplicationRow({ 
-        name: item.itemName, 
-        note: 'Заправка', 
-        itemId: item.id,
-        qty: getItemQuantity(item) // Передаем текущее количество из базы
-    });
+    syncItemToApplication(item);
 };
 
 function updateAppTotal() {
@@ -321,11 +356,13 @@ function updateAppTotal() {
 }
 
 // ==========================================
-// 8. ИНИЦИАЛИЗАЦИЯ
+// 8. ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('app-table-body') && document.querySelectorAll('.app-data-row').length === 0) {
-        addApplicationRow();
-    }
     renderCartridgesTab();
+    
+    // АВТОМАТИЧЕСКИ ПОДГРУЖАЕМ ВСЕ КАРТРИДЖИ В ЗАЯВКУ ПРИ СТАРТЕ
+    inventory.filter(isCartridgeItem).forEach(item => {
+        syncItemToApplication(item);
+    });
 });

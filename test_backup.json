@@ -1,0 +1,85 @@
+{
+  "inventory": [
+    {
+      "id": 1717000000001,
+      "itemName": "Принтер Pantum 3010DW",
+      "location": "Реанимация",
+      "dateTaken": "2026-09-16",
+      "dateImplemented": "2026-09-16",
+      "invNumber": "000004219",
+      "invoiceNumber": "Накладная 123",
+      "serialNumber": "SN-PANTUM-01"
+    },
+    {
+      "id": 1717000000002,
+      "itemName": "МФУ M7100DN",
+      "location": "Кабинет поликлиники",
+      "dateTaken": "2026-09-07",
+      "dateImplemented": "2026-09-07",
+      "invNumber": "000004027",
+      "invoiceNumber": "Накладная 456",
+      "serialNumber": "SN-MFU-99"
+    },
+    {
+      "id": 1717000000003,
+      "itemName": "Батарея аккумуляторная стационарная Малая",
+      "location": "Склад",
+      "dateTaken": "",
+      "dateImplemented": "2026-06-11",
+      "invNumber": "00000009054",
+      "invoiceNumber": "Приход от ООО 'МКТрейд'",
+      "serialNumber": ""
+    },
+    {
+      "id": 1717000000004,
+      "itemName": "Картридж HP 106A",
+      "location": "Склад",
+      "dateTaken": "",
+      "dateImplemented": "2026-10-01",
+      "invNumber": "",
+      "invoiceNumber": "Приход от ООО 'МКТрейд'",
+      "serialNumber": ""
+    },
+    {
+      "id": 1717000000005,
+      "itemName": "Мышь компьютерная",
+      "location": "Списано",
+      "dateTaken": "2026-01-01",
+      "dateImplemented": "2026-01-01",
+      "invNumber": "111222",
+      "invoiceNumber": "",
+      "serialNumber": ""
+    },
+    {
+      "id": 1717000000006,
+      "itemName": "Блок розеток",
+      "location": "Амбулатория",
+      "dateTaken": "2026-09-18",
+      "dateImplemented": "2026-09-18",
+      "invNumber": "",
+      "invoiceNumber": "Накладная 789",
+      "serialNumber": ""
+    }
+  ],
+  "receipts": [
+    {
+      "id": 1717000000010,
+      "date": "2026-06-11",
+      "supplier": "ООО 'МКТрейд'",
+      "items": [
+        {
+          "itemName": "Батарея аккумуляторная стационарная Малая",
+          "invNumber": "00000009054",
+          "serialNumber": "",
+          "qty": 30
+        },
+        {
+          "itemName": "Картридж HP 106A",
+          "invNumber": "",
+          "serialNumber": "",
+          "qty": 50
+        }
+      ]
+    }
+  ]
+}

@@ -45,7 +45,7 @@
                             <th style="width: 50px;">№</th>
                             <th>Наименование</th>
                             <th style="width: 100px;">Количество</th>
-                            <th>Где? (Куда?)</th>
+                            <th>Отделение (Куда?)</th>
                             <th style="width: 150px;">Когда взяли</th>
                             <th style="width: 130px;">Действия</th>
                         </tr>
@@ -79,7 +79,7 @@
                         <tr>
                             <th style="width: 4%;">№</th>
                             <th style="width: 18%;">Наименование <br> услуги <br> (предмета)</th>
-                            <th style="width: 24%;">Наименование <br> техники <br> подлежащей <br> ремонту (заправки)</th>
+                            <th style="width: 20%;">Наименование <br> техники <br> подлежащей <br> ремонту (заправки)</th>
                             <th style="width: 14%;">Количество <br> техники, <br> подлежащей <br> ремонту</th>
                             <th style="width: 16%;">Дата и <br> время <br> доставки</th>
                             <th style="width: 20%;">Примечание <br> (Заправка, <br> восстановление,<br> Сломан)</th>
@@ -108,18 +108,31 @@
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2 id="modalTitle">Добавить запись</h2>
+            <h2 id="modalTitle">Добавить картридж</h2>
             <form id="editForm">
                 <input type="hidden" id="editId">
+                
                 <div class="form-group">
-                    <label>Что? (Название):</label>
+                    <label>Наименование:</label>
                     <input type="text" id="editItemName" required>
                 </div>
+                
+                <div class="form-group">
+                    <label>Отделение (Куда):</label>
+                    <input type="text" id="editLocation" placeholder="Например: Реанимация">
+                </div>
+
+                <div class="form-group">
+                    <label>Дата / Время (Когда взяли):</label>
+                    <input type="date" id="editDateTaken">
+                </div>
+
                 <div class="form-group">
                     <label>Количество:</label>
                     <input type="number" id="editQuantity" required min="1" value="1">
                 </div>
-                <button type="submit" class="btn btn-primary">Сохранить и добавить в заявку</button>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Сохранить и добавить в заявку</button>
             </form>
         </div>
     </div>
