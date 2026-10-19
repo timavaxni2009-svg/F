@@ -39,6 +39,7 @@ h1 {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 .tab-btn {
@@ -185,8 +186,8 @@ tr:hover {
     width: 500px;
     border-radius: 8px;
     position: relative;
-    max-height: 85vh; /* Ограничиваем высоту 85% от высоты экрана */
-    overflow-y: auto; /* Добавляем вертикальную прокрутку внутри окна */
+    max-height: 85vh;
+    overflow-y: auto;
 }
 
 .close {
@@ -229,4 +230,248 @@ tr:hover {
 .report-table th {
     background: #ecf0f1;
     color: #333;
+}
+
+/* УЧЁТ: Группировка */
+.inventory-group {
+    margin-bottom: 25px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background: white;
+}
+
+.group-header {
+    background-color: #f39c12;
+    color: white;
+    padding: 12px 15px;
+    font-weight: bold;
+    font-size: 15px;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.group-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.group-table th {
+    background-color: #fdebd0;
+    color: #333;
+    font-size: 13px;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    position: static;
+}
+
+.group-table td {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.group-table tr:nth-child(even) {
+    background-color: #fcfcfc;
+}
+
+.group-table tr.clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.group-table tr.clickable:hover {
+    background-color: #e8f4fd !important;
+}
+
+.main-details-row td {
+    padding: 0 !important;
+    background: #fafcff;
+    white-space: normal;
+}
+
+.units-table {
+    width: 100%;
+    margin: 0;
+    font-size: 13px;
+    border-collapse: collapse;
+}
+
+.units-table th {
+    background: #dfe9f3;
+    color: #2c3e50;
+    padding: 6px 10px;
+    text-align: left;
+    font-weight: bold;
+    border-bottom: 1px solid #c5d5e5;
+}
+
+.units-table td {
+    padding: 5px 10px;
+    border-bottom: 1px solid #eef2f6;
+    white-space: nowrap;
+}
+
+.toggle-icon {
+    display: inline-block;
+    font-size: 10px;
+    color: #3498db;
+    margin-right: 5px;
+}
+
+.total-info {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+/* Картриджи: Поля ввода и статусы */
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+}
+.badge-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.badge-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.unit-input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+.unit-input:hover, .unit-input:focus {
+    border-color: #3498db;
+    background: white;
+    outline: none;
+}
+
+/* === Стили для вкладки "Заявка" === */
+.application-toolbar {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+#print-area {
+    background: white;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: 'Times New Roman', Times, serif;
+    color: #000;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.app-header {
+    margin-bottom: 20px;
+}
+
+.app-append {
+    text-align: right;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+.app-contract {
+    text-align: right;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+.app-title {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.app-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    table-layout: fixed; 
+}
+
+.app-table th, .app-table td {
+    border: 1px solid #000;
+    padding: 4px 2px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 12px;
+    word-wrap: break-word;
+}
+
+.app-table th {
+    color: black;
+    background: #f9f9f9;
+    font-weight: normal;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.app-table input {
+    width: 100%;
+    border: 1px solid transparent;
+    background: transparent;
+    text-align: center;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 2px;
+    box-sizing: border-box;
+    color: #000;
+}
+
+.app-table input:hover, .app-table input:focus {
+    border-color: #3498db;
+    background: #f0f8ff;
+    outline: none;
+}
+
+.app-signatures {
+    margin-top: 20px;
+    font-size: 14px;
+}
+.app-signatures p {
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+.signature-line {
+    margin-bottom: 10px;
+}
+
+/* === Стили для печати === */
+@media print {
+    @page { size: portrait; margin: 1cm; }
+    body { background: white; padding: 0; margin: 0; }
+    .container { max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
+    header, .tabs, .application-toolbar, .no-print, .btn { display: none !important; }
+    .tab-content { display: none !important; }
+    #tab-application { display: block !important; }
+    #print-area { border: none; padding: 0; margin: 0; width: 100%; }
+    
+    .app-table { font-size: 10pt; }
+    .app-table th, .app-table td { border: 1px solid #000 !important; padding: 3px; font-size: 9pt; }
+    .app-table input { border: none !important; background: transparent !important; padding: 0; font-size: 10pt; }
+    .app-table input::placeholder { color: transparent; }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Склад</title>
+    <title>Складской учет детской больницы</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -20,83 +20,109 @@
 
         <nav class="tabs">
             <button class="tab-btn active" data-tab="tab-accounting">📋 Учет</button>
-            <button class="tab-btn" data-tab="tab-receipts">📦 Приход на склад</button>
-            <button class="tab-btn" data-tab="tab-reports">📊 Отчеты</button>
+            <button class="tab-btn" data-tab="tab-application">📄 Заявка на ремонт</button>
+            <button class="tab-btn" data-tab="tab-cartridges">🖨️ Картриджи</button>
         </nav>
 
+        <!-- ВКЛАДКА 1: УЧЕТ -->
         <section id="tab-accounting" class="tab-content active">
             <div class="toolbar">
-                <input type="text" id="searchInput" placeholder="Поиск по названию, кабинету, серийному номеру...">
-                <button id="btnAddMainRow" class="btn btn-primary">➕ Добавить строку</button>
+                <input type="text" id="searchInput" placeholder="Поиск по названию, накладной...">
+                <button id="btnAddMainRow" class="btn btn-primary">➕ Добавить запись</button>
                 <button id="btnExportExcel" class="btn btn-success">📥 Экспорт в Excel</button>
             </div>
-            
-            <div class="table-wrapper">
-                <table id="mainTable">
+
+            <div class="table-wrapper" id="inventoryGroupsWrapper">
+                <div id="inventoryGroups"></div>
+            </div>
+
+            <div id="totalQuantityInfo" class="total-info"></div>
+        </section>
+
+        <!-- ВКЛАДКА 4: ЗАЯВКА -->
+        <section id="tab-application" class="tab-content">
+            <div class="application-toolbar no-print">
+                <button class="btn btn-primary" onclick="addApplicationRow()">➕ Добавить строку</button>
+                <button class="btn btn-danger" onclick="clearApplicationRows()">🗑️ Удалить всё</button>
+                <button class="btn btn-success" onclick="window.print()">🖨️ Распечатать / Сохранить в PDF</button>
+            </div>
+
+            <div id="print-area">
+                <div class="app-header">
+                    <p class="app-append">Приложение</p>
+                    <p class="app-contract">К договору № ________ от «____» ________________ 20___ г.</p>
+                    <p class="app-title">Заявка на оказание услуг по договору от «____» ________ 20___ г.</p>
+                </div>
+
+                <table class="app-table">
                     <thead>
                         <tr>
-                            <th>№</th>
-                            <th>Что?</th>
-                            <th>Где? (Куда?)</th>
-                            <th>Когда взяли</th>
-                            <th>Когда внедрили</th>
-                            <th>Инвентарный номер</th>
-                            <th>Номер накладной</th>
-                            <th>Серийный номер</th>
-                            <th>Действия</th>
+                            <th style="width: 4%;">№</th>
+                            <th style="width: 18%;">Наименование <br> услуги <br> (предмета)</th>
+                            <th style="width: 24%;">Наименование <br> техники <br> подлежащей <br> ремонту (заправки)</th>
+                            <th style="width: 14%;">Количество <br> техники, <br> подлежащей <br> ремонту</th>
+                            <th style="width: 16%;">Дата и <br> время <br> доставки</th>
+                            <th style="width: 20%;">Примечание <br> (Заправка, <br> восстановление,<br> Сломан)</th>
+                            <th class="no-print" style="width: 4%; border: none;"></th>
                         </tr>
                     </thead>
-                    <tbody id="mainTableBody">
+                    <tbody id="app-table-body">
+                        <tr id="app-total-row">
+                            <td colspan="3" style="text-align: right; font-weight: bold;">ВСЕГО</td>
+                            <td><input type="text" class="app-total-qty" readonly value="0"></td>
+                            <td colspan="3" style="border: none;" class="no-print"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="app-signatures">
+                    <p>ПОДПИСИ СТОРОН</p>
+                    <div class="signature-line">Исполнитель ИП Балацдина _________________________\______________(подпись)</div>
+                    <div class="signature-line">Заказчик ГБУЗ «ВОДКБ» _________________________\__________(подпись)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ВКЛАДКА 5: КАРТРИДЖИ -->
+        <section id="tab-cartridges" class="tab-content">
+            <div class="toolbar">
+                <input type="text" id="cartridgeSearchInput" placeholder="Поиск по названию, инв. номеру, серийному номеру...">
+                
+                <select id="cartridgeStatusFilter">
+                    <option value="all">Все картриджи</option>
+                    <option value="stock">Только на складе</option>
+                    <option value="issued">Только выданные</option>
+                </select>
+
+                <button id="btnAddCartridge" class="btn btn-primary">➕ Добавить картридж</button>
+                <button id="btnExportCartridges" class="btn btn-success">📥 Экспорт в Excel</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">№</th>
+                            <th>Наименование</th>
+                            <th>Инвентарный номер</th>
+                            <th>Серийный номер</th>
+                            <th>Где? (Куда?)</th>
+                            <th>Статус (Где?)</th>
+                            <th>Когда взяли</th>
+                            <th style="width: 100px;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartridgesTableBody">
+                        <!-- Данные добавляются скриптом -->
                     </tbody>
                 </table>
             </div>
-        </section>
 
-        <section id="tab-receipts" class="tab-content">
-            <h2>Оформление прихода на склад</h2>
-            <form id="receiptForm">
-                <div class="form-row">
-                    <label>Дата прихода:</label>
-                    <input type="date" id="receiptDate" required>
-                    
-                    <label>Поставщик:</label>
-                    <input type="text" id="receiptSupplier" placeholder="ООО 'МКТрейд'" required>
-                </div>
-                
-                <h3>Список предметов</h3>
-                <div id="receiptItems">
-                </div>
-                <button type="button" id="btnAddReceiptItem" class="btn btn-secondary">➕ Добавить предмет в накладную</button>
-                
-                <div class="form-actions" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">💾 Сохранить приход</button>
-                </div>
-            </form>
-        </section>
-
-        <section id="tab-reports" class="tab-content">
-            <h2>Генерация отчетов</h2>
-            <div class="toolbar">
-                <label>Период:</label>
-                <select id="reportPeriod">
-                    <option value="month">За месяц</option>
-                    <option value="halfyear">За полгода</option>
-                    <option value="year">За год</option>
-                </select>
-                
-                <label>Начало периода:</label>
-                <input type="date" id="reportStartDate">
-                
-                <button id="btnGenerateReport" class="btn btn-primary">Сформировать</button>
-                <button id="btnExportReport" class="btn btn-success">📥 Экспорт отчета в Excel</button>
-            </div>
-            
-            <div id="reportOutput" class="report-box">
-                <p>Выберите период и нажмите "Сформировать".</p>
-            </div>
+            <div id="cartridgeInfo" class="total-info"></div>
         </section>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -108,38 +134,18 @@
                     <input type="text" id="editItemName" required>
                 </div>
                 <div class="form-group">
-                    <label>Где? (Куда?):</label>
-                    <input type="text" id="editLocation" required>
-                </div>
-                <div class="form-group">
-                    <label>Когда взяли:</label>
-                    <input type="date" id="editDateTaken">
-                </div>
-                <div class="form-group">
-                    <label>Когда внедрили:</label>
-                    <input type="date" id="editDateImplemented">
-                </div>
-                <div class="form-group">
-                    <label>Инвентарный номер:</label>
-                    <input type="text" id="editInvNumber">
-                </div>
-                <div class="form-group">
                     <label>Количество:</label>
-                    <input type="number" id="editQuantity" required min="1">
+                    <input type="number" id="editQuantity" required min="1" value="1">
                 </div>
                 <div class="form-group">
-                    <label>Номер накладной:</label>
-                    <input type="text" id="editInvoiceNumber">
-                </div>
-                <div class="form-group">
-                    <label>Серийный номер:</label>
-                    <input type="text" id="editSerialNumber">
+                    <label>Номер накладной (Группа):</label>
+                    <input type="text" id="editInvoiceNumber" placeholder="Приход от...">
                 </div>
                 <button type="submit" class="btn btn-primary">Сохранить</button>
             </form>
         </div>
     </div>
-
+    
     <script src="script.js"></script>
 </body>
 </html>
